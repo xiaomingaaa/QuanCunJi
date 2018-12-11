@@ -10,16 +10,11 @@ using System.Windows.Forms;
 
 namespace quancunji
 {
-    public partial class Form1 : Form
+    public partial class Quancun : Form
     {
-        public Form1()
+        public Quancun()
         {
             InitializeComponent();
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-
         }
     }
 }
