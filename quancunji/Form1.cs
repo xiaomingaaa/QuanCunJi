@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using quancunji.Util;
 namespace quancunji
 {
     public partial class Form1 : Form
@@ -15,11 +15,16 @@ namespace quancunji
         public Form1()
         {
             InitializeComponent();
+            SocketUtil socket = new SocketUtil("127.0.0.1",3501);
+            socket.SendMsg("测试");
         }
-
+        
         private void button1_Click(object sender, EventArgs e)
         {
-
+            Quancun quancun = new Quancun();
+            quancun.showmain += delegate { this.Show(); };
+            quancun.Show();
+            this.Hide();
         }
     }
 }

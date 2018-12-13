@@ -63,6 +63,16 @@ namespace quancunji.Properties {
         /// <summary>
         ///   查找 System.Drawing.Bitmap 类型的本地化资源。
         /// </summary>
+        internal static System.Drawing.Bitmap btn_return {
+            get {
+                object obj = ResourceManager.GetObject("btn-return", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
         internal static System.Drawing.Bitmap index_btn_quancun {
             get {
                 object obj = ResourceManager.GetObject("index-btn-quancun", resourceCulture);

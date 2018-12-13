@@ -16,5 +16,13 @@ namespace quancunji
         {
             InitializeComponent();
         }
+        public delegate void showMain();
+        public event showMain showmain;
+        private void button1_Click(object sender, EventArgs e)
+        {
+            showmain();
+            Hide();
+            Dispose();
+        }
     }
 }

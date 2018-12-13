@@ -34,7 +34,7 @@
             // button1
             // 
             this.button1.Image = global::quancunji.Properties.Resources.index_btn_quancun;
-            this.button1.Location = new System.Drawing.Point(179, 27);
+            this.button1.Location = new System.Drawing.Point(210, 28);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(306, 432);
             this.button1.TabIndex = 0;
@@ -47,6 +47,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(704, 501);
             this.Controls.Add(this.button1);
+            this.DoubleBuffered = true;
             this.Name = "Form1";
             this.Text = "圈存";
             this.ResumeLayout(false);
