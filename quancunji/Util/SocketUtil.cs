@@ -43,16 +43,22 @@ namespace quancunji.Util
         }
         public void SendMsg(string content)
         {
+            string sendMsgg = "hnzf" + content + "zfjy" ;
+            string test = "QUFCQjAwNDZlNWU0YTNmOTJmODI4YWE3MDkwNWI1NzY5MDNhYWNobnpmMTIwNzI3fDEyNDkzMnw1Njc1OHwyNS42fDIwMTgxMjE3NDQ3NzEyNDE1NjZ8eGlhbmppbmNob25nemhpemZqeUJCQUE=";
             EstablishConnect();
-            byte[] data = Encoding.UTF8.GetBytes(content);
+            byte[] data = Encoding.UTF8.GetBytes(test);
             //client.BeginSend(data,0,data.Length,0,new AsyncCallback(SendCallBack),client);
             int l= client.Send(data);
-            byte[] buffer = new byte[512];
+            byte[] buffer = new byte[1024];
             int length = client.Receive(buffer);
+            string recvs = Encoding.UTF8.GetString(buffer,0,length);
+            Console.WriteLine(recvs);
             char[] chars = new char[length];
             System.Text.Decoder d = System.Text.Encoding.UTF8.GetDecoder();
             int charLen = d.GetChars(buffer, 0, length, chars, 0);
             String recv = new System.String(chars);
+            int index = recv.IndexOf("0");
+            recv.Substring(0,index+1);
             Console.WriteLine(recv);
         }
         private void SendCallBack(IAsyncResult result)

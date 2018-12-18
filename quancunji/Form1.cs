@@ -17,6 +17,10 @@ namespace quancunji
             InitializeComponent();
             SocketUtil socket = new SocketUtil("127.0.0.1",3501);
             socket.SendMsg("测试");
+            //"247242746eb7dfc7a109f858d464bf17"
+            //247242746eb7dfc7a109f858d464bf17
+            
+
         }
         
         private void button1_Click(object sender, EventArgs e)

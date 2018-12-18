@@ -13,7 +13,7 @@ namespace quancunji.Util
     class EncryptionUtil
     {
         /// <summary>
-        /// 使用MD5加密明文，得到Base64的密文字符串
+        /// 使用MD5加密明文，得到32位的密文字符串
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
@@ -23,8 +23,35 @@ namespace quancunji.Util
             MD5 md5 = new MD5CryptoServiceProvider();
             byte[] bytes = Encoding.Default.GetBytes(message);
             byte[] encryBytes = md5.ComputeHash(bytes);
-            string encryStr = Convert.ToBase64String(encryBytes);
-            return encryStr;
+            
+            StringBuilder sb = new StringBuilder();
+            foreach (byte t in encryBytes)
+            {
+                sb.Append(t.ToString("x2").ToLower());
+            }
+            return sb.ToString();
+        }
+        /// <summary>
+        /// 将明文转化成base64字符串
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns></returns>
+        public static string GetBase64Encode(string content)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(content);
+            string encriedStr = Convert.ToBase64String(bytes);
+            return encriedStr;
+        }
+        /// <summary>
+        /// 将经过base64加密过的字符串转换成明文字符串
+        /// </summary>
+        /// <param name="ciphertext">密文</param>
+        /// <returns></returns>
+        public static string GetBase64Decode(string ciphertext)
+        {
+            byte[] bytes = Convert.FromBase64String(ciphertext);
+            string plaintext = Encoding.UTF8.GetString(bytes);
+            return plaintext;
         }
     }
 }
