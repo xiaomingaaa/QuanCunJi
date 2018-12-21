@@ -41,25 +41,25 @@ namespace quancunji.Util
                 Console.WriteLine("程序连接中出现错误："+e.Message);
             }
         }
-        public void SendMsg(string content)
+        public string SendMsg(string content)
         {
-            string sendMsgg = "hnzf" + content + "zfjy" ;
-            string test = "QUFCQjAwNDZlNWU0YTNmOTJmODI4YWE3MDkwNWI1NzY5MDNhYWNobnpmMTIwNzI3fDEyNDkzMnw1Njc1OHwyNS42fDIwMTgxMjE3NDQ3NzEyNDE1NjZ8eGlhbmppbmNob25nemhpemZqeUJCQUE=";
-            EstablishConnect();
-            byte[] data = Encoding.UTF8.GetBytes(test);
-            //client.BeginSend(data,0,data.Length,0,new AsyncCallback(SendCallBack),client);
-            int l= client.Send(data);
-            byte[] buffer = new byte[1024];
-            int length = client.Receive(buffer);
-            string recvs = Encoding.UTF8.GetString(buffer,0,length);
-            Console.WriteLine(recvs);
-            char[] chars = new char[length];
-            System.Text.Decoder d = System.Text.Encoding.UTF8.GetDecoder();
-            int charLen = d.GetChars(buffer, 0, length, chars, 0);
-            String recv = new System.String(chars);
-            int index = recv.IndexOf("0");
-            recv.Substring(0,index+1);
-            Console.WriteLine(recv);
+            string recvs = "";
+            try
+            {
+                EstablishConnect();
+                byte[] data = Encoding.UTF8.GetBytes(content);
+                int l = client.Send(data);
+                byte[] buffer = new byte[1024];
+                int length = client.Receive(buffer);
+                recvs = Encoding.UTF8.GetString(buffer, 0, length);
+                Console.WriteLine(recvs);
+                
+            }
+            catch (Exception e)
+            {
+                Log.WriteError("发送或者接受数据时出现错误："+e.Message);
+            }
+            return recvs;
         }
         private void SendCallBack(IAsyncResult result)
         {

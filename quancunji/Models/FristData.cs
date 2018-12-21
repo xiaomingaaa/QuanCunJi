@@ -21,6 +21,13 @@ namespace quancunji.Models
         public override string ToString()
         {
             string str = string.Format("{0}|{1}|{2}",Cardno,WaterCardno,Schoolid);
+            return str;
+        }
+        public FristData(string cardno,string waterCardno,string schoolid)
+        {
+            this.Schoolid = schoolid;
+            Cardno = cardno;
+            WaterCardno = waterCardno;
         }
     }
 }

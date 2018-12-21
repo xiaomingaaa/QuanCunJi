@@ -23,12 +23,13 @@ namespace quancunji.Util
             string head = "AABB";
             string tail = "BBAA";
             string type = "00";//第一次发送
-            string md5 = EncryptionUtil.Md5Encryption(data.ToString());
+            string body = data.ToString();
+            string md5 = EncryptionUtil.Md5Encryption(body);
             back.Append(head);
             back.Append(type);
             back.Append(md5);
             back.Append("hnzf");
-            back.Append(data.ToString());
+            back.Append(body);
             back.Append("zfjy");
             back.Append(tail);
             return EncryptionUtil.GetBase64Encode(back.ToString());
@@ -38,21 +39,23 @@ namespace quancunji.Util
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public static string CreateSecondData(SecondData data)
+        public static string CreateSecondData(FristGetData data)
         {
             StringBuilder back = new StringBuilder();
             string head = "AABB";
             string tail = "BBAA";
             string type = "01";//第一次发送
-            string md5 = EncryptionUtil.Md5Encryption(data.ToString());
+            string body = data.ToString();
+            string md5 = EncryptionUtil.Md5Encryption(body);
             back.Append(head);
             back.Append(type);
             back.Append(md5);
             back.Append("hnzf");
-            back.Append(data.ToString());
+            back.Append(body);
             back.Append("zfjy");
             back.Append(tail);
             return EncryptionUtil.GetBase64Encode(back.ToString());
         }
+        
     }
 }

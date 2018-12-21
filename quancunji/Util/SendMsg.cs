@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace quancunji.Util
 {
     /// <summary>
-    /// 用于承载用户通讯事件的类
+    /// 发送信息类
     /// </summary>
-    class DelegateEvent
+    class SendMsg
     {
-
+       
     }
 }
