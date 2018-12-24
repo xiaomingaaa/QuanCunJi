@@ -27,6 +27,10 @@ namespace quancunji.Controller
             string ciphertext = CreateData.CreateFristData(data);
             SocketUtil socket = new SocketUtil(config.Ipaddr,config.Serverport);
             string backdata=socket.SendMsg(ciphertext);
+            if (backdata == "")
+            {
+                return "网络异常请检查网络情况！";
+            }
             FristGetData dataInfo = UnPackUtil.GetFristData(backdata);
             dataInfo.Money_shuika += Convert.ToDouble(info[3]);//添加水卡信息
             dataInfo.Money_canka += Convert.ToDouble(info[2]);
@@ -44,48 +48,48 @@ namespace quancunji.Controller
                 {
                     bool iscanka = false;
                     double addMoney = dataInfo.Money_canka;
-                    Console.WriteLine(addMoney);
-                    iscanka = operater.WriteWaterMoney(addMoney);
+                    //Console.WriteLine(addMoney);
+                    iscanka = operater.WriteCankaMoney(addMoney);
                     if (!iscanka)
                     {
-                        //error += "餐卡：圈存失败！\r\n";
+                        error += "餐卡：圈存失败！\r\n";
                     }
                     else
                     {
-                        SQLHelper.UpdateLocalMoney(info[0].ToString(),addMoney,0);//餐卡
-                        //error += Error.GetErrorMessage(ErrorConfig.QUANCUN_SUCCESS) + "\r\n餐卡剩余金额：" + addMoney + "\r\n";
+                        SQLHelper.UpdateLocalMoney(info[0].ToString(), addMoney, 0);//餐卡
+                        error += Error.GetErrorMessage(ErrorConfig.QUANCUN_SUCCESS) + "\r\n餐卡剩余金额：" + addMoney + "\r\n";
                     }
                 }
                 else
                 {
-                   // error += "餐卡：" + Error.GetErrorMessage(Error.GetErrorType(error_code_canka)) + "元\r\n";
+                     error += "餐卡：" + Error.GetErrorMessage(Error.GetErrorType(error_code_canka)) + "元\r\n";
                 }
 
-                if (error_code_shuika == 0)
-                {
-                    bool ishuika = false;
-                    double addMoney = dataInfo.Money_shuika;
-                    Console.WriteLine(addMoney);
-                    ishuika = operater.WriteWaterMoney(addMoney);
-                    if (!ishuika)
-                    {
-                        error += "水卡：圈存失败！\r\n";
-                    }
-                    else
-                    {
-                        SQLHelper.UpdateLocalMoney(info[1].ToString(),addMoney,1);//水卡
-                        error += Error.GetErrorMessage(ErrorConfig.QUANCUN_SUCCESS) + "\r\n水卡剩余金额：" + addMoney + "元\r\n";
-                    }
-                }
-                else
-                {
-                    error += "水卡：" + Error.GetErrorMessage(Error.GetErrorType(error_code_shuika)) + "\r\n";
-                }
+                //if (error_code_shuika == 0)
+                //{
+                //    bool ishuika = false;
+                //    double addMoney = dataInfo.Money_shuika;
+                //    //Console.WriteLine(addMoney);
+                //    ishuika = operater.WriteWaterMoney(addMoney);
+                //    if (!ishuika)
+                //    {
+                //        error += "水卡：圈存失败！\r\n";
+                //    }
+                //    else
+                //    {
+                //        SQLHelper.UpdateLocalMoney(info[1].ToString(),addMoney,1);//水卡
+                //        error += Error.GetErrorMessage(ErrorConfig.QUANCUN_SUCCESS) + "\r\n水卡剩余金额：" + addMoney + "元\r\n";
+                //    }
+                //}
+                //else
+                //{
+                //    error += "水卡：" + Error.GetErrorMessage(Error.GetErrorType(error_code_shuika)) + "\r\n";
+                //}
             }
             else
             {
-                error += "水卡：" + Error.GetErrorMessage(Error.GetErrorType(error_code_shuika)) + "\r\n";
-                //error += "餐卡：" + Error.GetErrorMessage(Error.GetErrorType(error_code_canka)) + "\r\n";
+               // error += "水卡：" + Error.GetErrorMessage(Error.GetErrorType(error_code_shuika)) + "\r\n";
+                error += "餐卡：" + Error.GetErrorMessage(Error.GetErrorType(error_code_canka)) + "\r\n";
             }
             Log.WriteError(error);
             return error;
@@ -96,7 +100,22 @@ namespace quancunji.Controller
         {
             JArray secondData = new JArray();
             var recevs =await Task.Run(()=>socket.SendMsg(content));
-            secondData = new JArray(recevs.ToString());
+            if (recevs == "")
+            {
+                Log.WriteError("回传数据出现网络错误！数据："+content);
+               
+                return secondData;
+            }
+            try
+            {
+                secondData = new JArray(recevs.ToString());
+            }
+            catch (Exception e)
+            {
+                Log.WriteError("第二次发送数据时出现错误："+e.Message+"\r\n学生数据："+content);
+                return secondData;
+            }
+            
             if (secondData.Count > 0)
             {
                 JObject canka = (JObject)secondData[0];

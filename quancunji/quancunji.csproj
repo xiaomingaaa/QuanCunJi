@@ -77,7 +77,6 @@
     <Compile Include="Util\CreateData.cs" />
     <Compile Include="Util\EncryptionUtil.cs" />
     <Compile Include="Util\Log.cs" />
-    <Compile Include="Util\SendMsg.cs" />
     <Compile Include="Util\SocketUtil.cs" />
     <Compile Include="Util\SQLHelper.cs" />
     <Compile Include="Util\SQLiteHelper.cs" />

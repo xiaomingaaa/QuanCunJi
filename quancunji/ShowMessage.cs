@@ -11,31 +11,33 @@ using System.Windows.Forms;
 namespace quancunji
 {
     public partial class ShowMessage : Form
-    {
+    {       
         public ShowMessage()
         {
             InitializeComponent();
         }
         public string message;
         private void timer1_Tick(object sender, EventArgs e)
-        {
+        {            
             label1.Text = "提示";
-            this.Hide();
-            if (timer1.Enabled)
-            {
-                timer1.Stop();
-                timer1.Enabled = false;
-            }
+            //this.Hide();
+            
+            this.Close();
+            //if (timer1.Enabled)
+            //{
+            //    timer1.Stop();
+            //    timer1.Enabled = false;
+            //}
             //timer1.Stop();
         }
 
         private void ShowMessage_Load(object sender, EventArgs e)
         {
-            if (!timer1.Enabled)
-            {
-                timer1.Enabled = true;
-                timer1.Start();
-            }
+            //if (!timer1.Enabled)
+            //{
+            //    timer1.Enabled = true;
+            //    timer1.Start();
+            //}
             
             label1.Text = message;
         }

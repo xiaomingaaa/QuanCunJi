@@ -121,6 +121,7 @@ namespace quancunji.Util
                 handle = M100_CommOpen(ConfigUtil.getConfig().Ledport);
             }
         }
+        
         public void ReleaseHandle()
         {
             //释放句柄
@@ -136,7 +137,8 @@ namespace quancunji.Util
         public bool LoadKey(int sec, byte keyType)
         {
             //验证扇区密码
-            byte[] password = new byte[6] { 0x14, 0x70, 0x25, 0x85, 0x67, 0x58 };
+            //byte[] password = new byte[6] { 0x12, 0x34, 0x56, 0x75, 0x67, 0x77 };//许昌一高
+            byte[] password = new byte[6] { 0x14,0x70,0x25,0x85,0x67,0x58};//武钢
             int flag = M100_S50LoadSecKey(handle, Convert.ToByte(sec), keyType, password);
             if (flag == 0)
                 return true;
@@ -155,11 +157,58 @@ namespace quancunji.Util
         public  object[] ReadCardInfo()
         {
             object[] info = new object[4];
-            info[0] = "00";//餐卡卡号
+            info[0] = ReadCankaNo();//餐卡卡号
             info[1] = ReadWaterCardNo();//string类型
-            info[2] =0;//餐卡金额
+            info[2] =ReadCankaMoney();//餐卡金额
             info[3] = ReadWaterMoney();//水卡金额
             return info;
+        }
+        public double ReadCankaMoney()
+        {
+            //取餐卡金额
+            double money = -1;
+            InitHandle();//初始化句柄
+            if (DetectCard())
+            {
+                if (LoadKey(1, 0x30))//6扇区，密码A
+                {
+                    int block = 1 * 4 + 0;//存储卡基本信息的块号
+                    byte _block = Convert.ToByte(block);
+                    byte[] read = new byte[16];
+                    int flag = M100_S50ReadBlock(handle, _block, read);//读卡数据
+                    if (flag != 0)
+                    {
+                        return -1;
+                    }
+                    byte[] moneyByte = new byte[4] { read[0], read[1], read[2], read[3] };
+                    money = GetMoney(moneyByte);
+
+                }
+            }
+            return money;
+        }
+        public string ReadCankaNo()
+        {
+            //获取餐卡卡号
+            int no = 0;
+            InitHandle();//初始化句柄
+            if (DetectCard())
+            {
+                if (LoadKey(0, 0x30))//6扇区，密码A
+                {
+                    int block = 0 * 4 + 1;//存储卡基本信息的块号
+                    byte _block = Convert.ToByte(block);
+                    byte[] read = new byte[16];
+                    int flag = M100_S50ReadBlock(handle, _block, read);//读卡数据
+                    if (flag != 0)
+                    {
+                        Log.WriteError(flag + "读餐卡错误");
+                    }
+                    byte[] cardno = new byte[3] { read[0], read[1], read[2] };
+                    no = GetCardNo(cardno);
+                }
+            }
+            return no.ToString();
         }
         public double ReadWaterMoney()
         {
@@ -208,7 +257,27 @@ namespace quancunji.Util
         }
         public bool WriteCankaMoney(double money)
         {
-            return true;
+            InitHandle();
+            string errorMsg = "";
+            if (DetectCard())
+            {
+                if (LoadKey(1, 0x30))
+                {
+                    byte[] temp = new byte[16];
+                    temp = GetMoneyBytes(money, 2);//获取金额块数据
+                    int moneyFlag = M100_S50WriteBlock(handle, 4, temp);//实际金额
+                    temp = GetMoneyBytes(money, 3);//获取配份金额块数据
+                    int bakeFlag = M100_S50WriteBlock(handle, 5, temp);//配份金额
+                    if (moneyFlag == 0 && bakeFlag == 0)
+                    {
+                        return true;
+                    }
+                    errorMsg += string.Format("写餐卡金额失败：moneyFlag={0},bakeFlag={1}\r\n", moneyFlag, bakeFlag);
+                }
+                errorMsg += string.Format("餐卡密码加载失败\r\n");
+            }
+            Log.WriteError(errorMsg);
+            return false;
         }
         public bool WriteWaterMoney(double money)
         {
@@ -227,9 +296,9 @@ namespace quancunji.Util
                     {                      
                         return true;
                     }
-                    errorMsg+=string.Format("写卡金额失败：moneyFlag={0},bakeFlag={1}\r\n", moneyFlag, bakeFlag);
+                    errorMsg+=string.Format("写水卡卡金额失败：moneyFlag={0},bakeFlag={1}\r\n", moneyFlag, bakeFlag);
                 }
-                errorMsg += string.Format("密码加载失败\r\n");
+                errorMsg += string.Format("水卡密码加载失败\r\n");
             }
             Log.WriteError(errorMsg);
             return false;
@@ -287,8 +356,17 @@ namespace quancunji.Util
             string crc = "1CE31CE3";//水卡金额
             if (type == 0)
             {
-                crc = "1DE21DE2";//配份金额校验码
+                crc = "1DE21DE2";//水卡配份金额校验码
             }
+            else if (type == 2)
+            {
+                crc = "04FB04FB";//餐卡金额校验码
+            }
+            else if (type == 3)
+            {
+                crc = "05FA05FA";//餐卡配份金额校验码
+            }
+            
             for (int i = 0; i < 4; i++)
             {
                 byte temp = Convert.ToByte(crc.Substring(i * 2, 2), 16);
@@ -300,7 +378,8 @@ namespace quancunji.Util
         {
             //弹出卡
             InitHandle();
-            int flag = M100_MoveCard(handle, 0x34);
+            //弹出到前端夹卡位置 0x34 直接吐出到前端
+            int flag = M100_MoveCard(handle, 0x32);
             if (flag != 0)
             {
                 return false;

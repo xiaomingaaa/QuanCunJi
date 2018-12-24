@@ -58,6 +58,7 @@
             this.Name = "ShowMessage";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "提示";
+            this.TopMost = true;
             this.Load += new System.EventHandler(this.ShowMessage_Load);
             this.ResumeLayout(false);
 

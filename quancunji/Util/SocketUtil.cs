@@ -21,12 +21,22 @@ namespace quancunji.Util
             this.ipaddr = ipaddr;
             this.port = port;
         }
-        private void EstablishConnect()
+        public bool EstablishConnect()
         {
             iPEndPoint = new IPEndPoint(IPAddress.Parse(ipaddr),port);
             client = new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
-            Console.WriteLine("连接。。。。");
-            client.Connect(iPEndPoint);
+            //Console.WriteLine("连接。。。。");
+            try
+            {
+                client.Connect(iPEndPoint);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Log.WriteError("创建服务器连接时出现错误：" + e.Message);
+                return false;
+            }
+            
 
         }
         private void Connect(IAsyncResult result)
@@ -46,14 +56,15 @@ namespace quancunji.Util
             string recvs = "";
             try
             {
-                EstablishConnect();
-                byte[] data = Encoding.UTF8.GetBytes(content);
-                int l = client.Send(data);
-                byte[] buffer = new byte[1024];
-                int length = client.Receive(buffer);
-                recvs = Encoding.UTF8.GetString(buffer, 0, length);
-                Console.WriteLine(recvs);
-                
+                if (EstablishConnect())
+                {
+                    byte[] data = Encoding.UTF8.GetBytes(content);
+                    int l = client.Send(data);
+                    byte[] buffer = new byte[1024];
+                    int length = client.Receive(buffer);
+                    recvs = Encoding.UTF8.GetString(buffer, 0, length);
+                    //Console.WriteLine(recvs);
+                }                                
             }
             catch (Exception e)
             {
