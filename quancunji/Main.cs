@@ -32,7 +32,7 @@ namespace quancunji
        // bool flag = true;
         private void timer1_Tick(object sender, EventArgs e)
         {
-            
+            //定时器用于轮询
             label1.Text = "请插卡";
             
             if (operater.DetectCard())
@@ -64,16 +64,23 @@ namespace quancunji
             label1.Text = "请插卡";
            
         }
-
+        int count = 1;
         private void timer2_Tick(object sender, EventArgs e)
         {
             SocketUtil socket = new SocketUtil("123.206.45.159",35001);
             if (socket.EstablishConnect())
             {
+                if (count == 0)
+                {
+                    operater.EnterCard();
+                }
+                count=12;
                 timer1.Enabled = true;
             }
             else
             {
+                count = 0;
+                operater.ClearCommd();//取消进卡
                 label1.Text = "网络连接异常，请联系管理员检查网络状况！";
                 timer1.Enabled = false;
             }

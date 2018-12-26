@@ -112,6 +112,9 @@ namespace quancunji.Util
         extern static int M100_EnterCard(IntPtr handle, byte enterType, int waitTime);
         [DllImport("M100_DLL.dll")]
         extern static int M100_EnterCardUntime(IntPtr handle, byte enterType);
+        //取消进卡命令
+        [DllImport("M100_DLL.dll")]
+        extern static int M100_Eot(IntPtr handle);
         static IntPtr handle;
         public void InitHandle()
         {
@@ -379,7 +382,7 @@ namespace quancunji.Util
             //弹出卡
             InitHandle();
             //弹出到前端夹卡位置 0x34 直接吐出到前端
-            int flag = M100_MoveCard(handle, 0x32);
+            int flag = M100_MoveCard(handle, 0x34);
             if (flag != 0)
             {
                 return false;
@@ -513,6 +516,16 @@ namespace quancunji.Util
                     break;
             }
             return temp;
+        }
+        public int ClearCommd()
+        {
+            InitHandle();
+            int flag= M100_Eot(handle);
+            if (flag != 0)
+            {
+                Log.WriteError("取消进卡命令时出现错误："+flag);
+            }
+            return flag;
         }
     }
 }

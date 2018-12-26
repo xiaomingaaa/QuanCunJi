@@ -52,14 +52,14 @@
             // timer2
             // 
             this.timer2.Enabled = true;
-            this.timer2.Interval = 300000;
+            this.timer2.Interval = 120000;
             this.timer2.Tick += new System.EventHandler(this.timer2_Tick);
             // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = global::quancunji.Properties.Resources.quancun;
+            this.BackgroundImage = global::quancunji.Properties.Resources.quancun_back;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ClientSize = new System.Drawing.Size(1352, 788);
             this.Controls.Add(this.label1);
