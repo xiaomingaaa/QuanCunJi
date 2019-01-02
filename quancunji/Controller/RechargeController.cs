@@ -15,85 +15,129 @@ namespace quancunji.Controller
     /// </summary>
     class RechargeController
     {
-        static Config config = ConfigUtil.getConfig();
+        
         public string SendFristMsg()
         {
-
-            CardOperate operater = new CardOperate();//读取卡信息 卡号，水卡号，金额，水卡金额
-            object[] info= operater.ReadCardInfo();
-            Console.WriteLine(config.Serverport+","+config.Ipaddr+","+config.Schoolid);
-            string schoolid = config.Schoolid.ToString();
-            FristData data = new FristData(info[0].ToString(),info[1].ToString(),schoolid);            
-            string ciphertext = CreateData.CreateFristData(data);
-            SocketUtil socket = new SocketUtil(config.Ipaddr,config.Serverport);
-            string backdata=socket.SendMsg(ciphertext);
-            if (backdata == "")
+            try
             {
-                return "网络异常请检查网络情况！";
-            }
-            FristGetData dataInfo = UnPackUtil.GetFristData(backdata);
-            dataInfo.Money_shuika += Convert.ToDouble(info[3]);//添加水卡信息
-            dataInfo.Money_canka += Convert.ToDouble(info[2]);
-            string sendmsg = CreateData.CreateSecondData(dataInfo);
-            Console.WriteLine(sendmsg);
-            int error_code_canka = dataInfo.Error_code_canka;
-            int error_code_shuika = dataInfo.Error_code_shuika;
-            string error = "提示：\r\n";
-            //异步处理群村状态
-            //Console.WriteLine(secondBack.ToString());
-            if (error_code_canka == 0 || error_code_shuika == 0)
-            {
-                Task<JArray> secondBack = SendSecondMsg(sendmsg, socket);
-                if (error_code_canka == 0)
+                Config config = ConfigUtil.getConfig();
+                CardOperate operater = new CardOperate();//读取卡信息 卡号，水卡号，金额，水卡金额
+                                                         //1-》佳研餐卡，优卡特水卡，2-》优卡特餐卡优卡特水卡，3-》优卡特水卡，4-》优卡特餐卡，5-》佳研餐卡
+                int type = config.Moneytype;
+                object[] info = operater.ReadCardInfo(config.Cardpwd, type);
+                Console.WriteLine(config.Serverport + "," + config.Ipaddr + "," + config.Schoolid);
+                string schoolid = config.Schoolid.ToString();
+                FristData data = new FristData(info[0].ToString(), info[1].ToString(), schoolid);
+                string ciphertext = CreateData.CreateFristData(data);
+                SocketUtil socket = new SocketUtil(config.Ipaddr, config.Serverport);
+                string backdata = socket.SendMsg(ciphertext);
+                if (backdata == "")
                 {
-                    bool iscanka = false;
-                    double addMoney = dataInfo.Money_canka;
-                    //Console.WriteLine(addMoney);
-                    iscanka = operater.WriteCankaMoney(addMoney);
-                    if (!iscanka)
+                    return "网络异常请检查网络情况！";
+                }
+                FristGetData dataInfo = UnPackUtil.GetFristData(backdata);
+                double oldWaterMoney = dataInfo.Money_shuika;
+                dataInfo.Money_shuika += Convert.ToDouble(info[3]);//添加水卡信息
+                double oldCankaMoney = dataInfo.Money_canka;
+                dataInfo.Money_canka += Convert.ToDouble(info[2]);
+                string sendmsg = CreateData.CreateSecondData(dataInfo);
+                Console.WriteLine(sendmsg);
+                int error_code_canka = dataInfo.Error_code_canka;
+                int error_code_shuika = dataInfo.Error_code_shuika;
+                string error = "";
+
+                //Console.WriteLine(secondBack.ToString());
+                if (error_code_canka == 0 || error_code_shuika == 0)
+                {
+                    //异步处理圈存状态
+                    Task<JArray> secondBack = SendSecondMsg(sendmsg, socket);
+                    if (type == 1 || type == 2 || type == 4 || type == 5)
                     {
-                        error += "餐卡：圈存失败！\r\n";
+                        if (error_code_canka == 0)
+                        {
+                            bool iscanka = false;
+                            double addMoney = dataInfo.Money_canka;
+                            //Console.WriteLine(addMoney);
+
+
+                            if (type == 5 || type == 1)
+                            {
+                                iscanka = operater.DlcAddMoney(Convert.ToInt32(oldCankaMoney * 100), config.Cardpwd);//佳研家款
+                            }
+                            else
+                            {
+                                iscanka = operater.WriteCankaMoney(addMoney);//优卡特价款
+                            }
+
+                            //
+                            if (!iscanka)
+                            {
+                                error += "餐卡：圈存失败！\r\n";
+                            }
+                            else
+                            {
+
+                                //SQLHelper.UpdateLocalMoney(info[0].ToString(), addMoney, 0);//餐卡
+                                var temp = UpdateLocal(info[0].ToString(), addMoney, oldCankaMoney, addMoney - oldCankaMoney, dataInfo.Type_canka, 0);
+                                error += Error.GetErrorMessage(ErrorConfig.QUANCUN_SUCCESS) + "\r\n餐卡剩余金额：" + addMoney + "\r\n";
+                            }
+                        }
+                        else
+                        {
+                            error += "餐卡：" + Error.GetErrorMessage(Error.GetErrorType(error_code_canka)) + "元\r\n";
+                        }
                     }
-                    else
+
+                    if (type == 1 || type == 2 || type == 3)
                     {
-                        SQLHelper.UpdateLocalMoney(info[0].ToString(), addMoney, 0);//餐卡
-                        error += Error.GetErrorMessage(ErrorConfig.QUANCUN_SUCCESS) + "\r\n餐卡剩余金额：" + addMoney + "\r\n";
+                        if (error_code_shuika == 0)
+                        {
+                            bool ishuika = false;
+                            double addMoney = dataInfo.Money_shuika;
+                            //Console.WriteLine(addMoney);
+                            ishuika = operater.WriteWaterMoney(addMoney);
+                            if (!ishuika)
+                            {
+                                error += "水卡：圈存失败！\r\n";
+                            }
+                            else
+                            {
+                                //SQLHelper.UpdateLocalMoney(info[1].ToString(), addMoney, 1);//水卡
+                                var temp = UpdateLocal(info[1].ToString(), addMoney, oldWaterMoney, addMoney - oldWaterMoney, dataInfo.Type_shuika, 1);
+                                error += Error.GetErrorMessage(ErrorConfig.QUANCUN_SUCCESS) + "\r\n水卡剩余金额：" + addMoney + "元\r\n";
+                            }
+                        }
+                        else
+                        {
+
+                            error += "水卡：" + Error.GetErrorMessage(Error.GetErrorType(error_code_shuika)) + "\r\n";
+                        }
                     }
+
                 }
                 else
                 {
-                     error += "餐卡：" + Error.GetErrorMessage(Error.GetErrorType(error_code_canka)) + "元\r\n";
-                }
+                    //1 -》佳研餐卡，优卡特水卡，2 -》优卡特餐卡优卡特水卡，3 -》优卡特水卡，4 -》优卡特餐卡，5 -》佳研餐卡
+                    if (type == 1 || type == 2 || type == 3)
+                    {
+                        error += "水卡：" + Error.GetErrorMessage(Error.GetErrorType(error_code_shuika)) + "\r\n";
+                    }
+                    if (type == 1 || type == 2 || type == 4 || type == 5)
+                    {
+                        error += "餐卡：" + Error.GetErrorMessage(Error.GetErrorType(error_code_canka)) + "\r\n";
+                    }
 
-                //if (error_code_shuika == 0)
-                //{
-                //    bool ishuika = false;
-                //    double addMoney = dataInfo.Money_shuika;
-                //    //Console.WriteLine(addMoney);
-                //    ishuika = operater.WriteWaterMoney(addMoney);
-                //    if (!ishuika)
-                //    {
-                //        error += "水卡：圈存失败！\r\n";
-                //    }
-                //    else
-                //    {
-                //        SQLHelper.UpdateLocalMoney(info[1].ToString(),addMoney,1);//水卡
-                //        error += Error.GetErrorMessage(ErrorConfig.QUANCUN_SUCCESS) + "\r\n水卡剩余金额：" + addMoney + "元\r\n";
-                //    }
-                //}
-                //else
-                //{
-                //    error += "水卡：" + Error.GetErrorMessage(Error.GetErrorType(error_code_shuika)) + "\r\n";
-                //}
+                }
+                Log.WriteError(error);
+                return error;
+                //return Error.GetErrorMessage(error);//返回报错信息
             }
-            else
+            catch (Exception e)
             {
-               // error += "水卡：" + Error.GetErrorMessage(Error.GetErrorType(error_code_shuika)) + "\r\n";
-                error += "餐卡：" + Error.GetErrorMessage(Error.GetErrorType(error_code_canka)) + "\r\n";
+                Log.WriteError("圈存时出现错误："+e.Message);
+                return "圈存时出现未知错误，请联系管理员！";
             }
-            Log.WriteError(error);
-            return error;
-            //return Error.GetErrorMessage(error);//返回报错信息
+            
         }
 
         private async Task<JArray> SendSecondMsg(string content,SocketUtil socket)
@@ -136,6 +180,14 @@ namespace quancunji.Controller
                 Log.WriteError("服务器处理错误！"+content);
             }
             return secondData;        
+        }
+        private async Task UpdateLocal(string stuno,double money,double oldmoney,double quancunjine,string rechargeType,int type)
+        {
+            bool isupdate= await Task.Run(()=> SQLHelper.UpdateLocalMoney(stuno,quancunjine,oldmoney,money,rechargeType,type));//等待执行
+            if (!isupdate)
+            {
+                SQLiteHelper.SaveRecord(stuno,money,oldmoney,quancunjine,rechargeType,type);
+            }
         }
     }
 }

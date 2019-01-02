@@ -39,6 +39,20 @@ namespace quancunji.Util
             
 
         }
+        public void DisConnected()
+        {
+            try
+            {
+                if (client.Connected)
+                {
+                    client.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                Log.WriteError("释放socket连接时出现了错误："+e.Message);
+            }
+        }
         private void Connect(IAsyncResult result)
         {
             Socket client = (Socket)result;
@@ -64,6 +78,7 @@ namespace quancunji.Util
                     int length = client.Receive(buffer);
                     recvs = Encoding.UTF8.GetString(buffer, 0, length);
                     //Console.WriteLine(recvs);
+                    DisConnected();
                 }                                
             }
             catch (Exception e)

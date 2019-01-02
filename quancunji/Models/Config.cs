@@ -18,6 +18,8 @@ namespace quancunji.Models
         private string database;
         private string localip;
         private string cankadb;
+        private string cardpwd;
+        
         public int Moneytype { get => moneytype; set => moneytype = value; }
         public int Schoolid { get => schoolid; set => schoolid = value; }
         public int Serverport { get => serverport; set => serverport = value; }
@@ -28,5 +30,6 @@ namespace quancunji.Models
         public string Database { get => database; set => database = value; }
         public string Localip { get => localip; set => localip = value; }
         public string Cankadb { get => cankadb; set => cankadb = value; }
+        public string Cardpwd { get => cardpwd; set => cardpwd = value; }
     }
 }

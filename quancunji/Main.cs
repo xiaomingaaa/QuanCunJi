@@ -16,7 +16,7 @@ namespace quancunji
         public Main()
         {
             InitializeComponent();
-            
+           // SQLiteHelper.SaveRecord("112345",23.5,10,13.5,"weixinchongzhi",1);//测试
         }
         CardOperate operater = new CardOperate();
         private void Main_Load(object sender, EventArgs e)
@@ -59,11 +59,6 @@ namespace quancunji
             }
             
         }
-        private void HandlMsg()
-        {
-            label1.Text = "请插卡";
-           
-        }
         int count = 1;
         private void timer2_Tick(object sender, EventArgs e)
         {
@@ -76,6 +71,7 @@ namespace quancunji
                 }
                 count=12;
                 timer1.Enabled = true;
+                socket.DisConnected();//释放连接，防止占用多余资源
             }
             else
             {
