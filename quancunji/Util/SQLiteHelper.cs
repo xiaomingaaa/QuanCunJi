@@ -54,6 +54,7 @@ namespace quancunji.Util
             catch (Exception e)
             {
                 Log.WriteError("SQLITE错误："+e.Message);
+                sqlconn.Close();//出错时关闭连接
                 return false;
             }
             

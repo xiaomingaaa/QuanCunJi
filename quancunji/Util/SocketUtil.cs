@@ -12,7 +12,7 @@ namespace quancunji.Util
     /// </summary>
     class SocketUtil
     {
-        private Socket client;
+        private static Socket client;
         private IPEndPoint iPEndPoint;
         private string ipaddr;
         private int port;
@@ -28,6 +28,7 @@ namespace quancunji.Util
             //Console.WriteLine("连接。。。。");
             try
             {
+                
                 client.Connect(iPEndPoint);
                 return true;
             }

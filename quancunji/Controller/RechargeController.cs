@@ -78,7 +78,7 @@ namespace quancunji.Controller
                             {
 
                                 //SQLHelper.UpdateLocalMoney(info[0].ToString(), addMoney, 0);//餐卡
-                                var temp = UpdateLocal(info[0].ToString(), addMoney, oldCankaMoney, addMoney - oldCankaMoney, dataInfo.Type_canka, 0);
+                                var temp = UpdateLocal(info[0].ToString(), addMoney,addMoney-oldCankaMoney , oldCankaMoney, dataInfo.Type_canka, 0);
                                 error += Error.GetErrorMessage(ErrorConfig.QUANCUN_SUCCESS) + "\r\n餐卡剩余金额：" + addMoney + "\r\n";
                             }
                         }
@@ -102,8 +102,8 @@ namespace quancunji.Controller
                             }
                             else
                             {
-                                //SQLHelper.UpdateLocalMoney(info[1].ToString(), addMoney, 1);//水卡
-                                var temp = UpdateLocal(info[1].ToString(), addMoney, oldWaterMoney, addMoney - oldWaterMoney, dataInfo.Type_shuika, 1);
+                                //SQLHelper.UpdateLocalMoney(info[1].ToString(), addMoney, 1);//水卡 oldmoney-圈存金额 
+                                var temp = UpdateLocal(info[1].ToString(), addMoney, addMoney-oldWaterMoney, oldWaterMoney, dataInfo.Type_shuika, 1);
                                 error += Error.GetErrorMessage(ErrorConfig.QUANCUN_SUCCESS) + "\r\n水卡剩余金额：" + addMoney + "元\r\n";
                             }
                         }
@@ -168,7 +168,7 @@ namespace quancunji.Controller
                 int shuika_code = Convert.ToInt32(shuika["error_code"]);
                 if (canka_code == 404)
                 {
-                    //Log.WriteError("学生餐卡圈存数据状态更改失败:"+content);
+                    Log.WriteError("学生餐卡圈存数据状态更改失败:"+content);
                 }
                 if (shuika_code == 404)
                 {
